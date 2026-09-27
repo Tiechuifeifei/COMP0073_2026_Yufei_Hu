@@ -28,6 +28,9 @@ from ibapi.wrapper import EWrapper
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+_data = str(PROJECT_ROOT / "01_data")
+if _data not in sys.path:
+    sys.path.insert(0, _data)
 
 from massive_audit.client import MassiveClient  # noqa: E402
 from massive_audit.phase_c import _ms_to_date  # noqa: E402

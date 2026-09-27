@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from portfolio_experiments.final_holdout.config import (
+from config import (
     BASE_RISK_DEGREE,
     BENCHMARK,
     CLOSE_COST,

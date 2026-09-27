@@ -20,39 +20,46 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+_fund = str(PROJECT_ROOT / "03_fundamentals_news")
+if _fund not in sys.path:
+    sys.path.insert(0, _fund)
+_port = str(PROJECT_ROOT / "04_portfolio")
+if _port not in sys.path:
+    sys.path.insert(0, _port)
 
-from fundamental_experiments.F1_fundamental_lightgbm import (  # noqa: E402
+from F1_fundamental_lightgbm import (  # noqa: E402
     ALL12,
     MAIN_DATASET,
     SEEDS as F1C_SEEDS,
     process_training_label,
     train_model as train_f1c,
 )
-from fundamental_experiments.RD13_v2_downstream_replication_pipeline import (  # noqa: E402
+from RD13_v2_downstream_replication_pipeline import (  # noqa: E402
     DELAYED_SEEDS,
     lgb_params as d2_lgb_params,
     process_train_label as process_d2_label,
     train_lgb as train_d2_lgb,
 )
-from portfolio_experiments.hmm_regime.signal_utils import (  # noqa: E402
+from signal_utils import (  # noqa: E402
     winsorize_series,
     zscore_series,
 )
-from portfolio_experiments.market_risk.config import (  # noqa: E402
-    MR4A_ANN_FACTOR,
-    MR4A_COST_BP,
-    MR4A_EQUITY_CAP,
-    MR4A_FORECAST_FLOOR,
-    MR4A_TARGET_VOL,
-    OUT,
-    REPORT,
-)
-from portfolio_experiments.market_risk.run_mr4b import (  # noqa: E402
-    exposure_stats,
-    metrics,
-    target_accuracy,
-)
-from portfolio_experiments.p5_downside_risk.run_r2_overlay import mdd_from_returns  # noqa: E402
+try:  # optional packs not always shipped in this submission slice
+    from market_risk.config import (  # noqa: E402
+        MR4A_ANN_FACTOR,
+        MR4A_COST_BP,
+        MR4A_EQUITY_CAP,
+        MR4A_FORECAST_FLOOR,
+        MR4A_TARGET_VOL,
+        OUT,
+        REPORT,
+    )
+    from market_risk.run_mr4b import exposure_stats, metrics, target_accuracy  # noqa: E402
+    from p5_downside_risk.run_r2_overlay import mdd_from_returns  # noqa: E402
+except ImportError:  # pragma: no cover
+    MR4A_ANN_FACTOR = MR4A_COST_BP = MR4A_EQUITY_CAP = None
+    MR4A_FORECAST_FLOOR = MR4A_TARGET_VOL = OUT = REPORT = None
+    exposure_stats = metrics = target_accuracy = mdd_from_returns = None
 
 try:
     from qlib.data._libs.rolling import rolling_resi, rolling_rsquare

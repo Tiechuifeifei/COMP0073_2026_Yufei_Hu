@@ -104,7 +104,7 @@ def build_finbert_daily_panel(force: bool = False) -> Path:
     if out_path.exists() and not force:
         return out_path
 
-    s3 = load_module("s3", PROJECT_ROOT / "sentiment_experiments/S3_daily_sentiment_panel.py")
+    s3 = load_module("s3", PROJECT_ROOT / "01_data/sentiment_experiments/S3_daily_sentiment_panel.py")
     articles = pd.read_parquet(ARTICLES_PATH)
     articles = articles[
         (articles["publication_date"] >= str(s3.PERIOD_START))
@@ -388,8 +388,8 @@ def main() -> int:
         return 1
 
     build_finbert_daily_panel()
-    av = load_module("av", PROJECT_ROOT / "sentiment_experiments/S5R_corrected_av_only.py")
-    ex = load_module("exante", PROJECT_ROOT / "sentiment_experiments/S5R_corrected_av_only_exante_v2.py")
+    av = load_module("av", PROJECT_ROOT / "03_fundamentals_news/S5R_corrected_av_only.py")
+    ex = load_module("exante", PROJECT_ROOT / "03_fundamentals_news/S5R_corrected_av_only_exante_v2.py")
 
     all_metrics: list[dict] = []
 

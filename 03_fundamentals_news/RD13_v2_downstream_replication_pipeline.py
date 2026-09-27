@@ -147,7 +147,7 @@ def verify_column_hashes(panel: pd.DataFrame, expected: dict[str, str], feats: l
 
 def load_r1r2p():
     spec = importlib.util.spec_from_file_location(
-        "r1r2p", PROJECT_ROOT / "fundamental_experiments/R1R2P_rd_fundamental_portfolio_backtest.py",
+        "r1r2p", PROJECT_ROOT / "03_fundamentals_news/R1R2P_rd_fundamental_portfolio_backtest.py",
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -240,7 +240,7 @@ def stage_retry(prog: dict, stage: str) -> None:
 
 def load_r05_build():
     spec = importlib.util.spec_from_file_location(
-        "r05", PROJECT_ROOT / "fundamental_experiments/R05_build_rd_fundamental_model_datasets.py",
+        "r05", PROJECT_ROOT / "03_fundamentals_news/R05_build_rd_fundamental_model_datasets.py",
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -249,7 +249,7 @@ def load_r05_build():
 
 def load_exante():
     spec = importlib.util.spec_from_file_location(
-        "ex", PROJECT_ROOT / "sentiment_experiments/S5R_corrected_av_only_exante_v2.py",
+        "ex", PROJECT_ROOT / "03_fundamentals_news/S5R_corrected_av_only_exante_v2.py",
     )
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

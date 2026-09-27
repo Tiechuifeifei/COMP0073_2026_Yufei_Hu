@@ -11,9 +11,9 @@ slippage,broker_fill_vs_massive_mean_bps,-4.293381501279316,${PROJECT_ROOT}/repo
 slippage,broker_fill_vs_massive_median_bps,-5.151294412575336,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
 slippage,BUY_mean_bps,-5.348910042075827,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
 slippage,SELL_mean_bps,-3.4137743839488905,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
-cost,commission_USD,52.244378,${PROJECT_ROOT}/ibkr/audit_actual_paper_pnl_20260831_20260910_summary.json
-cost,commission_GBP_approx,38.5586810632588,${PROJECT_ROOT}/ibkr/audit_actual_paper_pnl_20260831_20260910_summary.json
-cost,approx_daily_commission_bp_of_start_NAV,0.04852559532730607,${PROJECT_ROOT}/ibkr/audit_actual_paper_pnl_20260831_20260910_summary.json; vs backtest one-way 1bp on traded notional (not identical basis)
+cost,commission_USD,52.244378,${PROJECT_ROOT}/06_execution/audit_actual_paper_pnl_20260831_20260910_summary.json
+cost,commission_GBP_approx,38.5586810632588,${PROJECT_ROOT}/06_execution/audit_actual_paper_pnl_20260831_20260910_summary.json
+cost,approx_daily_commission_bp_of_start_NAV,0.04852559532730607,${PROJECT_ROOT}/06_execution/audit_actual_paper_pnl_20260831_20260910_summary.json; vs backtest one-way 1bp on traded notional (not identical basis)
 fidelity,mean_name_jaccard_intended_vs_actual,0.9583333333333334,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/D_rebalance_reconciliation.csv+${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/C_daily_account_path.csv
 fidelity,mean_rough_weight_MAE,0.0095,membership diff ×0.19 / 5 (proxy; not mark-to-market weights)
 returns,actual_cum_return,-0.06467616926975117,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/A_B_window_and_performance.json

@@ -35,7 +35,7 @@ EXPECTED_ROWS = 307_075
 
 
 def load_finbert_module():
-    path = PROJECT_ROOT / "sentiment_experiments/S5R_finbert_full_history.py"
+    path = PROJECT_ROOT / "03_fundamentals_news/S5R_finbert_full_history.py"
     spec = importlib.util.spec_from_file_location("s5r_finbert_hist", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -107,7 +107,15 @@ def repair_headline_only(fb_mod, queue: pd.DataFrame, scores: pd.DataFrame) -> t
 
     bad_q = queue[queue["row_id"].isin(bad["row_id"])].copy()
     loader = fb_mod.TextLoader()
-    sector_map = __import__("sentiment_experiments.S6A_sentiment_scorer_benchmark", fromlist=["load_sector_map"]).load_sector_map()
+    _s6a_p = PROJECT_ROOT / "01_data/sentiment_experiments/S6A_sentiment_scorer_benchmark.py"
+    if _s6a_p.is_file():
+        import importlib.util as _ilu
+        _sp = _ilu.spec_from_file_location("s6a", _s6a_p)
+        _sm = _ilu.module_from_spec(_sp)
+        _sp.loader.exec_module(_sm)
+        sector_map = _sm.load_sector_map()
+    else:
+        sector_map = {}
     model, tokenizer, device = fb_mod.load_finbert_model()
 
     texts: list[str] = []

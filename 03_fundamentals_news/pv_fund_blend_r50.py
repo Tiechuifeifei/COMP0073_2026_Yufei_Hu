@@ -85,16 +85,16 @@ EW_EXCLUDED = [
 ]
 
 REUSED_FUNCTIONS = [
-    "fundamental_experiments/loop9_fund_incremental_ablation.py::daily_ic_metrics",
-    "fundamental_experiments/loop9_fund_incremental_ablation.py::paired_delta",
-    "fundamental_experiments/loop9_fund_incremental_ablation.py::newey_west_tstat",
-    "fundamental_experiments/loop9_fund_incremental_ablation.py::ensemble_predictions",
-    "fundamental_experiments/loop9_fund_incremental_ablation.py::process_training_label",
-    "fundamental_experiments/loop9_fund_incremental_ablation.py::PERIODS (covid/post_covid)",
-    "fundamental_experiments/loop9_fixed_capacity_robustness.py::train_fixed",
-    "fundamental_experiments/loop9_fixed_capacity_robustness.py::predict_fixed",
-    "fundamental_experiments/loop9_fixed_capacity_robustness.py::enrich_paired / evidence labels",
-    "fundamental_experiments/loop9_fixed_capacity_robustness.py::two_sided_p_from_t",
+    "03_fundamentals_news/loop9_fund_incremental_ablation.py::daily_ic_metrics",
+    "03_fundamentals_news/loop9_fund_incremental_ablation.py::paired_delta",
+    "03_fundamentals_news/loop9_fund_incremental_ablation.py::newey_west_tstat",
+    "03_fundamentals_news/loop9_fund_incremental_ablation.py::ensemble_predictions",
+    "03_fundamentals_news/loop9_fund_incremental_ablation.py::process_training_label",
+    "03_fundamentals_news/loop9_fund_incremental_ablation.py::PERIODS (covid/post_covid)",
+    "03_fundamentals_news/loop9_fixed_capacity_robustness.py::train_fixed",
+    "03_fundamentals_news/loop9_fixed_capacity_robustness.py::predict_fixed",
+    "03_fundamentals_news/loop9_fixed_capacity_robustness.py::enrich_paired / evidence labels",
+    "03_fundamentals_news/loop9_fixed_capacity_robustness.py::two_sided_p_from_t",
 ]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")

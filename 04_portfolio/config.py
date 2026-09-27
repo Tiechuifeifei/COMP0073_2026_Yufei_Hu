@@ -5,7 +5,7 @@ import os
 
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PKG_ROOT = Path(__file__).resolve().parent
 OUT_ROOT = PROJECT_ROOT / "data" / "portfolio_experiments" / "hmm_regime"
 REPORT_ROOT = PROJECT_ROOT / "reports" / "portfolio_experiments" / "hmm_regime"

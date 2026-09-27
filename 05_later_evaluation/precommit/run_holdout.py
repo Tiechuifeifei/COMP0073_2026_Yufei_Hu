@@ -13,9 +13,11 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
+_here = str(Path(__file__).resolve().parent)
+if _here not in sys.path:
+    sys.path.insert(0, _here)
 
-from portfolio_experiments.final_holdout.config import (
+from config import (
     D2_PRED_PATH,
     F1C_PRED_PATH,
     HOLDOUT_END,
@@ -24,7 +26,7 @@ from portfolio_experiments.final_holdout.config import (
     PANEL_PATH,
     REPORT_ROOT,
 )
-from portfolio_experiments.final_holdout.precommit import load_or_write_precommit
+from precommit import load_or_write_precommit
 
 
 def _load_dates(path: Path, *, is_pkl: bool = False) -> tuple[pd.Timestamp, pd.Timestamp, int]:
@@ -246,7 +248,7 @@ def main() -> None:
         print(f"Wrote blocked holdout artifacts under {OUT_ROOT}")
         return
 
-    from portfolio_experiments.final_holdout.holdout_runner import run_holdout_evaluation
+    from holdout_runner import run_holdout_evaluation
 
     audit["holdout_first_portfolio_access_at"] = datetime.now(timezone.utc).isoformat()
     run_holdout_evaluation(precommit, audit)

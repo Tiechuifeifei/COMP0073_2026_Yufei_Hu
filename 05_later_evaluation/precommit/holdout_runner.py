@@ -16,35 +16,51 @@ from qlib.contrib.evaluate import risk_analysis
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
+_here = str(Path(__file__).resolve().parent)
+if _here not in sys.path:
+    sys.path.insert(0, _here)
+_port = str(PROJECT_ROOT / "04_portfolio")
+if _port not in sys.path:
+    sys.path.insert(0, _port)
 sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
 
 import run_portfolio_ablation as rpa  # noqa: E402
 
-from portfolio_experiments.final_holdout.config import (
-    BASE_RISK_DEGREE,
-    D2_PRED_PATH,
-    F1C_PRED_PATH,
-    HOLDOUT_END,
-    HOLDOUT_START,
-    OUT_ROOT,
-    PANEL_PATH,
-    R2_FEATURE_COLS,
-    R2_LABEL_MAP,
-    R2_SEED,
-    REPORT_ROOT,
-    TOPK,
-    TRAIN_END,
-    TRAIN_START,
-)
-from portfolio_experiments.hmm_3state_robustness.hmm_utils import (
-    HMMFitConfig,
-    attach_trade_dates,
-    fit_hmm,
-    online_filter,
-)
-from portfolio_experiments.hmm_regime.config import OUT_ROOT as MAIN_HMM_ROOT
-from portfolio_experiments.hmm_regime.hmm_online_filter import (
+import importlib.util as _ilu
+
+def _load_mod(name, path):
+    spec = _ilu.spec_from_file_location(name, Path(path))
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+_fh = _load_mod("fh_config", Path(__file__).resolve().parent / "config.py")
+BASE_RISK_DEGREE = _fh.BASE_RISK_DEGREE
+D2_PRED_PATH = _fh.D2_PRED_PATH
+F1C_PRED_PATH = _fh.F1C_PRED_PATH
+HOLDOUT_END = _fh.HOLDOUT_END
+HOLDOUT_START = _fh.HOLDOUT_START
+OUT_ROOT = _fh.OUT_ROOT
+PANEL_PATH = _fh.PANEL_PATH
+R2_FEATURE_COLS = _fh.R2_FEATURE_COLS
+R2_LABEL_MAP = _fh.R2_LABEL_MAP
+R2_SEED = _fh.R2_SEED
+REPORT_ROOT = _fh.REPORT_ROOT
+TOPK = _fh.TOPK
+TRAIN_END = _fh.TRAIN_END
+TRAIN_START = _fh.TRAIN_START
+try:
+    from hmm_utils import (
+        HMMFitConfig,
+        attach_trade_dates,
+        fit_hmm,
+        online_filter,
+    )
+except ImportError:  # pragma: no cover
+    HMMFitConfig = attach_trade_dates = fit_hmm = online_filter = None
+_hmm = _load_mod("hmm_config", PROJECT_ROOT / "04_portfolio/config.py")
+MAIN_HMM_ROOT = _hmm.OUT_ROOT
+from hmm_online_filter import (
     OnlineHMMConfig,
     attach_trade_dates as attach_trade_dates_2s,
     fit_hmm_train_only,
@@ -52,10 +68,10 @@ from portfolio_experiments.hmm_regime.hmm_online_filter import (
     online_filter_posteriors,
     state_label_series,
 )
-from portfolio_experiments.hmm_regime.metrics_utils import load_r1r2p_module, mdd_from_returns, run_qlib_backtest
-from portfolio_experiments.hmm_regime.run_portfolio_test import calmar_ratio, holdings_topk, overlap_daily
-from portfolio_experiments.hmm_regime.run_validation import attach_states_to_panel
-from portfolio_experiments.hmm_regime.signal_utils import (
+from metrics_utils import load_r1r2p_module, mdd_from_returns, run_qlib_backtest
+from run_portfolio_test import calmar_ratio, holdings_topk, overlap_daily
+from run_validation import attach_states_to_panel
+from signal_utils import (
     WEIGHT_SCHEMES,
     build_dynamic_score,
     pred_df_to_qlib,

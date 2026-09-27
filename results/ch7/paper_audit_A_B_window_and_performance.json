@@ -30,10 +30,10 @@
     "fx_end": 0.7402001
   },
   "authoritative_sources": [
-    "ibkr/audit_ibkr_live_pull_20260910.json (TWS reqExecutions + positions; reconcile PASS)",
-    "ibkr/audit_actual_fills_20260831_20260910.csv",
-    "ibkr/audit_actual_positions_20260831_20260910.csv",
-    "ibkr/audit_actual_paper_pnl_20260831_20260910.csv / _summary.json",
+    "06_execution/audit_ibkr_live_pull_20260910.json (TWS reqExecutions + positions; reconcile PASS)",
+    "06_execution/audit_actual_fills_20260831_20260910.csv",
+    "06_execution/audit_actual_positions_20260831_20260910.csv",
+    "06_execution/audit_actual_paper_pnl_20260831_20260910.csv / _summary.json",
     "reports/ibkr/p5_paper_20260831_status.json / p5_paper_moc_fills.json",
     "reports/ibkr/p5_paper_20260901_status.json",
     "reports/ibkr/p5_moc_staged_20260908.json",

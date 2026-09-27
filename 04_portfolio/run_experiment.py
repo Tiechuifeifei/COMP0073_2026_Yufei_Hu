@@ -16,46 +16,64 @@ import numpy as np
 import pandas as pd
 from qlib.contrib.evaluate import risk_analysis
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
+_pre = str(PROJECT_ROOT / "05_later_evaluation" / "precommit")
+if _pre not in sys.path:
+    sys.path.insert(0, _pre)
+_port = str(PROJECT_ROOT / "04_portfolio")
+if _port not in sys.path:
+    sys.path.insert(0, _port)
 sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
 
 import run_portfolio_ablation as rpa  # noqa: E402
 
-from portfolio_experiments.adaptive_turnover_ma120.run_a0_parity import (  # noqa: E402
+try:
+    from adaptive_turnover_ma120.run_a0_parity import (  # noqa: E402
     compare_window,
     flatten_checks,
     json_safe as a0_json_safe,
 )
-from portfolio_experiments.final_holdout import holdout_runner as hr  # noqa: E402
-from portfolio_experiments.final_holdout.config import HOLDOUT_END, HOLDOUT_START  # noqa: E402
-from portfolio_experiments.hmm_regime.config import (  # noqa: E402
-    SPY_CSV_PATH,
-    TEST_END,
-    TEST_START,
-    VALID_END,
-    VALID_START,
-)
-from portfolio_experiments.hmm_regime.metrics_utils import load_r1r2p_module, mdd_from_returns, run_qlib_backtest  # noqa: E402
-from portfolio_experiments.hmm_regime.run_portfolio_test import (  # noqa: E402
+except ImportError:
+    compare_window = flatten_checks = a0_json_safe = None  # not shipped
+
+import importlib.util as _ilu  # noqa: E402
+
+def _load_mod(name, path):  # noqa: E402
+    spec = _ilu.spec_from_file_location(name, path)
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+_fh = _load_mod("fh_config", PROJECT_ROOT / "05_later_evaluation/precommit/config.py")  # noqa: E402
+HOLDOUT_END, HOLDOUT_START = _fh.HOLDOUT_END, _fh.HOLDOUT_START
+import holdout_runner as hr  # noqa: E402
+_hmm = _load_mod("hmm_config", PROJECT_ROOT / "04_portfolio/config.py")  # noqa: E402
+SPY_CSV_PATH = _hmm.SPY_CSV_PATH
+TEST_END, TEST_START = _hmm.TEST_END, _hmm.TEST_START
+VALID_END, VALID_START = _hmm.VALID_END, _hmm.VALID_START
+from metrics_utils import load_r1r2p_module, mdd_from_returns, run_qlib_backtest  # noqa: E402
+from run_portfolio_test import (  # noqa: E402
     build_scheme_pred,
     frozen_hmm_timeline,
     infer_score_sign,
 )
-from portfolio_experiments.hmm_regime.run_validation import attach_states_to_panel, load_common_panel  # noqa: E402
-from portfolio_experiments.hmm_regime.signal_utils import preprocess_scores  # noqa: E402
-from portfolio_experiments.topk_breadth.strategies import (  # noqa: E402
-    AUDIT_LOG,
-    AlternatingDropTopkStrategy,  # noqa: F401
-    reset_audit_log,
-)
+from run_validation import attach_states_to_panel, load_common_panel  # noqa: E402
+from signal_utils import preprocess_scores  # noqa: E402
+try:
+    from strategies import (  # noqa: E402
+        AUDIT_LOG,
+        AlternatingDropTopkStrategy,  # noqa: F401
+        reset_audit_log,
+    )
+except ImportError:  # pragma: no cover
+    AUDIT_LOG, AlternatingDropTopkStrategy, reset_audit_log = [], None, lambda: None
 
 OUT_ROOT = PROJECT_ROOT / "data/portfolio_experiments/topk_breadth"
 REPORT_ROOT = PROJECT_ROOT / "reports/portfolio_experiments/topk_breadth"
 PRECOMMIT_PATH = OUT_ROOT / "precommit.json"
-STRATEGY_MODULE = "portfolio_experiments.topk_breadth.strategies"
+STRATEGY_MODULE = "strategies"  # expected alongside 04_portfolio when present
 
 T0_FROZEN = PROJECT_ROOT / "data/portfolio_experiments/hmm_regime/portfolio_test_daily_returns.parquet"
 H0_FROZEN = PROJECT_ROOT / "data/portfolio_experiments/final_holdout/attribution/holdout_h0_daily_returns.parquet"

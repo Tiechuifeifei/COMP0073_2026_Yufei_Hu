@@ -21,7 +21,7 @@ import certifi
 import pandas as pd
 import requests
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ENV_PATH = PROJECT_ROOT / ".env"
 WRDS_CSV = PROJECT_ROOT / "data/extracted/dwklv3a23uaacd05_csv/dwklv3a23uaacd05.csv"
 SP500_TXT = PROJECT_ROOT / "staging/instruments/sp500.txt"

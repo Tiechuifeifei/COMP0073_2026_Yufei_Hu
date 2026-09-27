@@ -23,9 +23,14 @@ from qlib.utils import init_instance_by_config
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
+_here = str(Path(__file__).resolve().parent)
+if _here not in sys.path:
+    sys.path.insert(0, _here)
+_port = str(PROJECT_ROOT / "04_portfolio")
+if _port not in sys.path:
+    sys.path.insert(0, _port)
 
-from portfolio_experiments.final_holdout.config import (
+from config import (
     D2_PRED_PATH,
     F1C_PRED_PATH,
     HOLDOUT_END,
@@ -33,8 +38,8 @@ from portfolio_experiments.final_holdout.config import (
     OUT_ROOT,
     PANEL_PATH,
 )
-from portfolio_experiments.final_holdout.extend_crsp import extend_crsp
-from portfolio_experiments.final_holdout.extend_rd13_panel import extend_rd13_panel
+from extend_crsp import extend_crsp
+from extend_rd13_panel import extend_rd13_panel
 
 AUDIT_PATH = OUT_ROOT / "upstream_preparation_audit.json"
 HOLDOUT_SPLIT = ("2024-01-01", HOLDOUT_END)
@@ -84,7 +89,7 @@ def assign_split(dt: pd.Series) -> pd.Series:
 
 
 def load_r05():
-    path = PROJECT_ROOT / "fundamental_experiments/R05_build_rd_fundamental_model_datasets.py"
+    path = PROJECT_ROOT / "03_fundamentals_news/R05_build_rd_fundamental_model_datasets.py"
     spec = importlib.util.spec_from_file_location("r05", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -231,7 +236,7 @@ def reconstruct_d2(panel: pd.DataFrame) -> dict:
 
 
 def reconstruct_f1c(panel: pd.DataFrame | None = None) -> dict:
-    f1_path = PROJECT_ROOT / "fundamental_experiments/F1_fundamental_lightgbm.py"
+    f1_path = PROJECT_ROOT / "03_fundamentals_news/F1_fundamental_lightgbm.py"
     spec = importlib.util.spec_from_file_location("f1", f1_path)
     f1 = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(f1)
@@ -257,8 +262,17 @@ def reconstruct_f1c(panel: pd.DataFrame | None = None) -> dict:
 
 
 def extend_spy_features() -> dict:
-    from portfolio_experiments.hmm_regime.build_spy_features import build_spy_features
-    from portfolio_experiments.final_holdout.config import SPY_CSV_PATH, MAIN_HMM_ROOT
+    import importlib.util
+    try:
+        from build_spy_features import build_spy_features  # optional helper
+    except ImportError:
+        build_spy_features = None
+    spec = importlib.util.spec_from_file_location(
+        "hmm_config", PROJECT_ROOT / "04_portfolio/config.py"
+    )
+    hmm_cfg = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hmm_cfg)
+    SPY_CSV_PATH, MAIN_HMM_ROOT = hmm_cfg.SPY_CSV_PATH, hmm_cfg.OUT_ROOT
 
     spy = pd.read_csv(SPY_CSV_PATH)
     spy.columns = [c.lower() for c in spy.columns]

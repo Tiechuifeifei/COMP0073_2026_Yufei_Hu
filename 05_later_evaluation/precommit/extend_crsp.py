@@ -10,9 +10,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from portfolio_experiments.final_holdout.qlib_pv_extension import build_qlib_pv, load_sp500_instruments
+from qlib_pv_extension import build_qlib_pv, load_sp500_instruments
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_here = str(Path(__file__).resolve().parent)
+if _here not in sys.path:
+    sys.path.insert(0, _here)
 CRSP_PATH = PROJECT_ROOT / "data/crsp_daily/crsp_daily_market.parquet"
 OUT_AUDIT = PROJECT_ROOT / "data/portfolio_experiments/final_holdout/upstream_crsp_extension_audit.json"
 HOLDOUT_END = "2025-12-31"

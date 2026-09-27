@@ -578,7 +578,7 @@ def _placebo_worker(args: tuple) -> dict[str, Any]:
         from pathlib import Path
 
         project = Path(os.environ["PROJECT_ROOT"]) if os.environ.get("PROJECT_ROOT") else Path(__file__).resolve().parents[1]
-        sys.path.insert(0, str(project / "fundamental_experiments"))
+        sys.path.insert(0, str(project / "03_fundamentals_news"))
         sys.path.insert(0, str(project))
         sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
         os.environ.setdefault("QLIB_LOGGING_LEVEL", "WARNING")
@@ -1039,7 +1039,7 @@ def main() -> int:
         "elapsed_sec": time.time() - t0,
         "ended_at_utc": datetime.now(timezone.utc).isoformat(),
         "status": "COMPLETED",
-        "script": "fundamental_experiments/k5d1_posthoc_diagnosis.py",
+        "script": "03_fundamentals_news/k5d1_posthoc_diagnosis.py",
     }
     (OUT / "run_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

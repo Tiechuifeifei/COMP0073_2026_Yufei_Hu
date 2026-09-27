@@ -11,16 +11,19 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from portfolio_experiments.final_holdout.qlib_pv_extension import extend_daily_pv_through
+from qlib_pv_extension import extend_daily_pv_through
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_here = str(Path(__file__).resolve().parent)
+if _here not in sys.path:
+    sys.path.insert(0, _here)
 V2_PANEL = PROJECT_ROOT / "data/fundamental_experiments/RD13_provenance/RD13_v2_CORRECTED/rd13_v2_panel.parquet"
 OUT_AUDIT = PROJECT_ROOT / "data/portfolio_experiments/final_holdout/upstream_rd13_extension_audit.json"
 HOLDOUT_END = "2025-12-31"
 
 
 def _load_compute_fn():
-    path = PROJECT_ROOT / "fundamental_experiments/RD13_provenance_reconstruction.py"
+    path = PROJECT_ROOT / "03_fundamentals_news/RD13_provenance_reconstruction.py"
     spec = importlib.util.spec_from_file_location("rd13_prov", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

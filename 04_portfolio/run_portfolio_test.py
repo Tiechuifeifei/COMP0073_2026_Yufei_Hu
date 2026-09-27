@@ -14,15 +14,15 @@ import numpy as np
 import pandas as pd
 from qlib.contrib.evaluate import risk_analysis
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
 
 import run_portfolio_ablation as rpa  # noqa: E402
 
-from portfolio_experiments.hmm_regime.build_spy_features import build_spy_features
-from portfolio_experiments.hmm_regime.config import (
+from build_spy_features import build_spy_features
+from config import (
     BASE_RISK_DEGREE,
     HARD_CUTOFF,
     HOLDOUT_START,
@@ -34,7 +34,7 @@ from portfolio_experiments.hmm_regime.config import (
     TRAIN_END,
     TRAIN_START,
 )
-from portfolio_experiments.hmm_regime.hmm_online_filter import (
+from hmm_online_filter import (
     OnlineHMMConfig,
     attach_trade_dates,
     fit_hmm_train_only,
@@ -42,19 +42,19 @@ from portfolio_experiments.hmm_regime.hmm_online_filter import (
     online_filter_posteriors,
     state_label_series,
 )
-from portfolio_experiments.hmm_regime.metrics_utils import (
+from metrics_utils import (
     load_r1r2p_module,
     mdd_from_returns,
     portfolio_by_year,
     run_qlib_backtest,
 )
-from portfolio_experiments.hmm_regime.regime_exposure_strategy import GLOBAL_AUDIT_LOG
-from portfolio_experiments.hmm_regime.run_validation import (
+from regime_exposure_strategy import GLOBAL_AUDIT_LOG
+from run_validation import (
     attach_states_to_panel,
     build_exposure_schedule,
     load_common_panel,
 )
-from portfolio_experiments.hmm_regime.signal_utils import (
+from signal_utils import (
     WEIGHT_SCHEMES,
     build_dynamic_score,
     pred_df_to_qlib,
@@ -170,7 +170,7 @@ def run_arm(
             TEST_START,
             TEST_END,
             strategy_class="RegimeExposureTopkStrategy",
-            strategy_module="portfolio_experiments.hmm_regime.regime_exposure_strategy",
+            strategy_module="regime_exposure_strategy",
             extra_kwargs={
                 "exposure_by_date": schedule,
                 "use_target_exposure_scaling": True,

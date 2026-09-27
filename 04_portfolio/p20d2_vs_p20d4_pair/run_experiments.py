@@ -23,35 +23,42 @@ from qlib.contrib.evaluate import risk_analysis
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
+_pre = str(PROJECT_ROOT / "05_later_evaluation" / "precommit")
+if _pre not in sys.path:
+    sys.path.insert(0, _pre)
 sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
 
-from portfolio_experiments.final_holdout import holdout_runner as hr  # noqa: E402
-from portfolio_experiments.final_holdout.config import (  # noqa: E402
-    BASE_RISK_DEGREE,
-    HOLD_THRESH,
-    HOLDOUT_END,
-    HOLDOUT_START,
-)
-from portfolio_experiments.hmm_regime.config import (  # noqa: E402
-    TEST_END,
-    TEST_START,
-    VALID_END,
-    VALID_START,
-)
-from portfolio_experiments.hmm_regime.metrics_utils import (  # noqa: E402
+import importlib.util as _ilu  # noqa: E402
+
+def _load_mod(name, path):  # noqa: E402
+    spec = _ilu.spec_from_file_location(name, path)
+    mod = _ilu.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+_fh = _load_mod("fh_config", PROJECT_ROOT / "05_later_evaluation/precommit/config.py")  # noqa: E402
+BASE_RISK_DEGREE, HOLD_THRESH = _fh.BASE_RISK_DEGREE, _fh.HOLD_THRESH
+HOLDOUT_END, HOLDOUT_START = _fh.HOLDOUT_END, _fh.HOLDOUT_START
+import holdout_runner as hr  # noqa: E402
+_hmm = _load_mod("hmm_config", PROJECT_ROOT / "04_portfolio/config.py")  # noqa: E402
+TEST_END, TEST_START = _hmm.TEST_END, _hmm.TEST_START
+VALID_END, VALID_START = _hmm.VALID_END, _hmm.VALID_START
+_port = str(PROJECT_ROOT / "04_portfolio")
+if _port not in sys.path:
+    sys.path.insert(0, _port)
+from metrics_utils import (  # noqa: E402
     load_r1r2p_module,
     mdd_from_returns,
 )
-from portfolio_experiments.hmm_regime.run_portfolio_test import (  # noqa: E402
+from run_portfolio_test import (  # noqa: E402
     build_scheme_pred,
     infer_score_sign,
 )
-from portfolio_experiments.hmm_regime.run_validation import (  # noqa: E402
+from run_validation import (  # noqa: E402
     attach_states_to_panel,
     load_common_panel,
 )
-from portfolio_experiments.topk_breadth import run_experiment as tb  # noqa: E402
+import run_experiment as tb  # 04_portfolio/run_experiment.py  # noqa: E402
 
 OUT = PROJECT_ROOT / "reports/portfolio_engine_pair/p20d2_vs_p20d4_main_experiments"
 DATA = PROJECT_ROOT / "data/portfolio_experiments/p20d2_vs_p20d4_main_experiments"

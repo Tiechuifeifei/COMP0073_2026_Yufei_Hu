@@ -2,7 +2,7 @@
 """S5R full-history FinBERT scoring with checkpointed shards and atomic commit.
 
 Run in the sentiment-nlp env, e.g.:
-  /opt/anaconda3/envs/sentiment-nlp/bin/python sentiment_experiments/S5R_finbert_full_history.py"""
+  /opt/anaconda3/envs/sentiment-nlp/bin/python 03_fundamentals_news/S5R_finbert_full_history.py"""
 
 from __future__ import annotations
 
@@ -22,8 +22,23 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from sentiment_experiments.S3_daily_sentiment_panel import PERIOD_END, PERIOD_START, dedupe_articles  # noqa: E402
-from sentiment_experiments.S6A_sentiment_scorer_benchmark import FINBERT_CHECKPOINT, load_sector_map  # noqa: E402
+import importlib.util as _ilu  # noqa: E402
+
+def _load_rel(_name, _rel):  # noqa: E402
+    _p = PROJECT_ROOT / _rel
+    _s = _ilu.spec_from_file_location(_name, _p)
+    _m = _ilu.module_from_spec(_s)
+    _s.loader.exec_module(_m)
+    return _m
+
+_s3 = _load_rel("s3_panel", "01_data/sentiment_experiments/S3_daily_sentiment_panel.py")  # noqa: E402
+PERIOD_END, PERIOD_START, dedupe_articles = _s3.PERIOD_END, _s3.PERIOD_START, _s3.dedupe_articles  # noqa: E402
+_s6a_path = PROJECT_ROOT / "01_data/sentiment_experiments/S6A_sentiment_scorer_benchmark.py"
+if _s6a_path.is_file():
+    _s6a = _load_rel("s6a", "01_data/sentiment_experiments/S6A_sentiment_scorer_benchmark.py")
+    FINBERT_CHECKPOINT, load_sector_map = _s6a.FINBERT_CHECKPOINT, _s6a.load_sector_map
+else:
+    FINBERT_CHECKPOINT, load_sector_map = None, None  # optional; not shipped in this pack
 
 OUT_ROOT = PROJECT_ROOT / "data/sentiment_experiments/S5R_corrected/finbert_full_history"
 SHARD_DIR = OUT_ROOT / "shards"

@@ -25,21 +25,25 @@ from qlib.constant import REG_US
 from qlib.contrib.evaluate import risk_analysis
 from qlib.data import D
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "fundamental_experiments"))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
+sys.path.insert(0, str(PROJECT_ROOT / "03_fundamentals_news"))
+sys.path.insert(0, str(PROJECT_ROOT / "04_portfolio"))
+sys.path.insert(0, str(PROJECT_ROOT / "05_later_evaluation" / "precommit"))
 sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
 
 import F2P_portfolio_backtest as f2p  # noqa: E402
 import run_portfolio_ablation as rpa  # noqa: E402
-from portfolio_experiments.final_holdout import holdout_runner as hr  # noqa: E402
-from portfolio_topk_drop_joint import holdings_diagnostics  # noqa: E402
-from portfolio_experiments.hmm_regime.metrics_utils import (  # noqa: E402
+import holdout_runner as hr  # noqa: E402
+try:
+    from portfolio_topk_drop_joint import holdings_diagnostics  # noqa: E402
+except ImportError:  # pragma: no cover
+    holdings_diagnostics = None
+from metrics_utils import (  # noqa: E402
     load_r1r2p_module,
     run_qlib_backtest,
 )
-from portfolio_experiments.hmm_regime.signal_utils import pred_df_to_qlib  # noqa: E402
+from signal_utils import pred_df_to_qlib  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("matched_2x2")

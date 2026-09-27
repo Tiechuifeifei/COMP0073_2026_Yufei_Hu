@@ -17,7 +17,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 AUDIT = PROJECT / "reports/ibkr/dissertation_final_paper_audit_20260831_20260910"
 IBKR_REP = PROJECT / "reports/ibkr"
-IBKR_DIR = PROJECT / "ibkr"
+IBKR_DIR = PROJECT / "06_execution"
 LIVE = PROJECT / "data/portfolio_experiments/market_risk/live_target"
 SPY_PATH = PROJECT / "data/massive_2026/raw/SPY_daily.parquet"
 
@@ -120,9 +120,9 @@ def main() -> None:
                 "data/portfolio_experiments/market_risk/live_target/ (weights_full / daily_full / order_target)",
             ],
             "code_entrypoints": [
-                "ibkr/p5_paper_moc_rebalance.py",
-                "ibkr/p5_paper_execute_massive_sizing.py",
-                "ibkr/p5_paper_ledger_preflight.py",
+                "06_execution/p5_paper_moc_rebalance.py",
+                "06_execution/p5_paper_execute_massive_sizing.py",
+                "06_execution/p5_paper_ledger_preflight.py",
             ],
             "freeze_commit_note": "Operational freeze documented in .cursor/rules/p5-paper-execution.mdc and PAPER-P5-IBKR registry; script evolution via dated bak_* / p5_paper_moc_rebalance_YYYYMMDD.py snapshots (not a single dissertation git SHA for live orders).",
         },

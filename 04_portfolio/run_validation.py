@@ -13,16 +13,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(PROJECT_ROOT / "portfolio_experiments"))
 sys.path.insert(0, str(Path(os.environ["RDAGENT_ROOT"]) / "phase3_portfolio_ablation" / "scripts"))
 
 import run_portfolio_ablation as rpa  # noqa: E402
 
-from portfolio_experiments.hmm_regime.build_spy_features import build_spy_features
-from portfolio_experiments.hmm_regime.config import (
+from build_spy_features import build_spy_features
+from config import (
     BASE_RISK_DEGREE,
     D2_PRED_PATH,
     D3_PRED_PATH,
@@ -36,7 +35,7 @@ from portfolio_experiments.hmm_regime.config import (
     VALID_END,
     VALID_START,
 )
-from portfolio_experiments.hmm_regime.hmm_online_filter import (
+from hmm_online_filter import (
     OnlineHMMConfig,
     attach_trade_dates,
     compute_state_run_stats,
@@ -48,7 +47,7 @@ from portfolio_experiments.hmm_regime.hmm_online_filter import (
     state_label_series,
     validation_log_likelihood,
 )
-from portfolio_experiments.hmm_regime.metrics_utils import (
+from metrics_utils import (
     daily_ic_series,
     daily_rank_ic_series,
     ic_summary,
@@ -58,7 +57,7 @@ from portfolio_experiments.hmm_regime.metrics_utils import (
     run_qlib_backtest,
     topk_overlap,
 )
-from portfolio_experiments.hmm_regime.signal_utils import (
+from signal_utils import (
     WEIGHT_SCHEMES,
     build_dynamic_score,
     pred_df_to_qlib,
@@ -411,7 +410,7 @@ def run_exposure_validation(states_valid: pd.DataFrame, p0_pred: pd.DataFrame, r
             VALID_START,
             VALID_END,
             strategy_class="RegimeExposureTopkStrategy",
-            strategy_module="portfolio_experiments.hmm_regime.regime_exposure_strategy",
+            strategy_module="regime_exposure_strategy",
             extra_kwargs={
                 "exposure_by_date": schedule,
                 "use_target_exposure_scaling": True,
