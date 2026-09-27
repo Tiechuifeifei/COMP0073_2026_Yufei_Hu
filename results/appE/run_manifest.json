@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-09-23T11:37:22+00:00",
+  "out": "${PROJECT_ROOT}/reports/rd13_l20_unified_ABCD_20260923_193417",
+  "delayed_panel": "${PROJECT_ROOT}/data/rd13_v2_downstream_replication/stage_1_delayed_panel/delayed_common_sample_rd13_v2.parquet",
+  "rd8_extended": "${PROJECT_ROOT}/reports/holdout_2024_2025_K5D1_WD_no_retrain_20260921_000350/rd_loop9_panel_extended.pkl",
+  "seeds": [
+    42,
+    2026,
+    3407
+  ],
+  "boost_rounds": [
+    10,
+    20,
+    50
+  ],
+  "early_stopping": false,
+  "lgb": {
+    "objective": "regression",
+    "metric": "mse",
+    "verbosity": -1,
+    "colsample_bytree": 0.8879,
+    "learning_rate": 0.2,
+    "subsample": 0.8789,
+    "lambda_l1": 205.6999,
+    "lambda_l2": 580.9768,
+    "max_depth": 8,
+    "num_leaves": 210,
+    "num_threads": 8
+  },
+  "boot_block": 21,
+  "boot_n": 2000,
+  "runtime_sec": 184.8822769170074,
+  "d2_pred": "${PROJECT_ROOT}/data/rd13_v2_downstream_replication/stage_2_delayed_models/pred_D2_ALPHA20_RD13_V2.parquet",
+  "note": "Alpha20_RD8 alias B1; R10/R20 predicted via num_iteration from R50 models"
+}

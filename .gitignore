@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+mlruns/
+data/raw/
+*.parquet
+*.pkl
+*.pickle
+_build/conda_raw/

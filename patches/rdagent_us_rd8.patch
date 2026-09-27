@@ -1,0 +1,605 @@
+diff --git a/rdagent/app/qlib_rd_loop/conf.py b/rdagent/app/qlib_rd_loop/conf.py
+index 13dade7c..67ccc23c 100644
+--- a/rdagent/app/qlib_rd_loop/conf.py
++++ b/rdagent/app/qlib_rd_loop/conf.py
+@@ -77,21 +77,38 @@ class FactorBasePropSetting(BasePropSetting):
+     train_start: str = "2008-01-01"
+     """Start date of the training segment"""
+ 
+-    train_end: str = "2014-12-31"
++    train_end: str = "2017-12-31"
+     """End date of the training segment"""
+ 
+-    valid_start: str = "2015-01-01"
++    valid_start: str = "2018-01-01"
+     """Start date of the validation segment"""
+ 
+-    valid_end: str = "2016-12-31"
++    valid_end: str = "2019-12-31"
+     """End date of the validation segment"""
+ 
+-    test_start: str = "2017-01-01"
++    test_start: str = "2020-01-01"
+     """Start date of the test / backtest segment"""
+ 
+-    test_end: Optional[str] = "2020-08-01"
++    test_end: Optional[str] = "2023-12-31"
+     """End date of the test / backtest segment"""
+ 
++    market: str = "sp500"
++    """Qlib instruments market name (e.g. sp500, sp500_tech, sp500_bank)"""
++
++    topk: int = 20
++    """TopkDropoutStrategy portfolio width (match universe size for Mag7: 7)"""
++
++    n_drop: int = 2
++    """TopkDropoutStrategy names replaced per rebalance day (same as main experiment)"""
++
++    accumulate_all: bool = False
++    """
++    When True, merge factors from every successfully executed prior loop into the
++    factor library (not only loops with decision=True / ARR beat SOTA).
++    Intended for small-universe sector reruns (e.g. bank Exp4); default False keeps
++    main RQ1 behaviour unchanged.
++    """
++
+ 
+ class FactorFromReportPropSetting(FactorBasePropSetting):
+     # 1) override the scen attribute
+diff --git a/rdagent/oai/llm_conf.py b/rdagent/oai/llm_conf.py
+index a9a1130e..b5edc4a6 100644
+--- a/rdagent/oai/llm_conf.py
++++ b/rdagent/oai/llm_conf.py
+@@ -67,7 +67,7 @@ class LLMSettings(ExtendedBaseSettings):
+     chat_azure_api_base: str = ""
+     chat_azure_api_version: str = ""
+     chat_max_tokens: int | None = None
+-    chat_temperature: float = 0.5
++    chat_temperature: float = 1.0
+     chat_stream: bool = True
+     chat_seed: int | None = None
+     chat_frequency_penalty: float = 0.0
+diff --git a/rdagent/scenarios/qlib/developer/factor_runner.py b/rdagent/scenarios/qlib/developer/factor_runner.py
+index c6b58d35..92659fb1 100644
+--- a/rdagent/scenarios/qlib/developer/factor_runner.py
++++ b/rdagent/scenarios/qlib/developer/factor_runner.py
+@@ -78,6 +78,9 @@ class QlibFactorRunner(CachedRunner[QlibFactorExperiment]):
+             "valid_start": fbps.valid_start,
+             "valid_end": fbps.valid_end,
+             "test_start": fbps.test_start,
++            "market": fbps.market,
++            "topk": str(fbps.topk),
++            "n_drop": str(fbps.n_drop),
+             "feature_names": str(list(exp.base_features.keys())),
+             "feature_expressions": str(list(exp.base_features.values())),
+         }
+@@ -86,9 +89,14 @@ class QlibFactorRunner(CachedRunner[QlibFactorExperiment]):
+ 
+         if exp.based_experiments:
+             SOTA_factor = None
++            merge_sources = getattr(exp, "factor_library_experiments", None) or exp.based_experiments
++            if merge_sources is not exp.based_experiments:
++                logger.info(
++                    f"Accumulate-all mode: merging factors from {max(0, len(merge_sources) - 1)} prior successful loop(s)"
++                )
+             # Filter and retain only QlibFactorExperiment instances
+             sota_factor_experiments_list = [
+-                base_exp for base_exp in exp.based_experiments if isinstance(base_exp, QlibFactorExperiment)
++                base_exp for base_exp in merge_sources if isinstance(base_exp, QlibFactorExperiment)
+             ]
+             if len(sota_factor_experiments_list) > 1:
+                 logger.info(f"SOTA factor processing ...")
+diff --git a/rdagent/scenarios/qlib/developer/model_runner.py b/rdagent/scenarios/qlib/developer/model_runner.py
+index 7f909420..928d1405 100644
+--- a/rdagent/scenarios/qlib/developer/model_runner.py
++++ b/rdagent/scenarios/qlib/developer/model_runner.py
+@@ -1,3 +1,5 @@
++import platform
++
+ import pandas as pd
+ 
+ from rdagent.app.qlib_rd_loop.conf import ModelBasePropSetting
+@@ -11,6 +13,20 @@ from rdagent.scenarios.qlib.experiment.factor_experiment import QlibFactorExperi
+ from rdagent.scenarios.qlib.experiment.model_experiment import QlibModelExperiment
+ 
+ 
++def _macos_safe_qrun_env() -> dict[str, str]:
++    """Limit fork/thread fan-out for qlib qrun on macOS (PyTorch DataLoader + BLAS)."""
++    if platform.system() != "Darwin":
++        return {}
++    return {
++        "OMP_NUM_THREADS": "1",
++        "MKL_NUM_THREADS": "1",
++        "OPENBLAS_NUM_THREADS": "1",
++        "VECLIB_MAXIMUM_THREADS": "1",
++        "NUMEXPR_NUM_THREADS": "1",
++        "OBJC_DISABLE_INITIALIZE_FORK_SAFETY": "YES",
++    }
++
++
+ class QlibModelRunner(CachedRunner[QlibModelExperiment]):
+     """
+     Docker run
+@@ -73,6 +89,8 @@ class QlibModelRunner(CachedRunner[QlibModelExperiment]):
+         if mbps.test_end is not None:
+             env_to_use.update({"test_end": mbps.test_end})
+ 
++        env_to_use.update(_macos_safe_qrun_env())
++
+         training_hyperparameters = exp.sub_tasks[0].training_hyperparameters
+         if training_hyperparameters:
+             env_to_use.update(
+diff --git a/rdagent/scenarios/qlib/experiment/factor_data_template/generate.py b/rdagent/scenarios/qlib/experiment/factor_data_template/generate.py
+index f05aee5b..12d73e63 100755
+--- a/rdagent/scenarios/qlib/experiment/factor_data_template/generate.py
++++ b/rdagent/scenarios/qlib/experiment/factor_data_template/generate.py
+@@ -1,27 +1,35 @@
+ import qlib
+-
+-qlib.init(provider_uri="~/.qlib/qlib_data/cn_data")
+-
+ from qlib.data import D
+ 
+-instruments = D.instruments()
+-fields = ["$open", "$close", "$high", "$low", "$volume", "$factor"]
+-data = D.features(instruments, fields, freq="day").swaplevel().sort_index().loc["2008-12-29":].sort_index()
++QLIB_DATA = "${QLIB_DATA_DIR}"
++START_TIME = "2008-01-01"
++END_TIME = "2023-12-31"
++FIELDS = ["$open", "$close", "$high", "$low", "$volume", "$factor"]
+ 
+-data.to_hdf("./daily_pv_all.h5", key="data")
+ 
++def main() -> None:
++    qlib.init(provider_uri=QLIB_DATA, region="us")
++    instruments = D.instruments("sp500")
+ 
+-fields = ["$open", "$close", "$high", "$low", "$volume", "$factor"]
+-data = (
+-    (
+-        D.features(instruments, fields, start_time="2018-01-01", end_time="2019-12-31", freq="day")
++    data = (
++        D.features(instruments, FIELDS, start_time=START_TIME, end_time=END_TIME, freq="day")
+         .swaplevel()
+         .sort_index()
+     )
+-    .swaplevel()
+-    .loc[data.reset_index()["instrument"].unique()[:100]]
+-    .swaplevel()
+-    .sort_index()
+-)
++    data.to_hdf("./daily_pv_all.h5", key="data")
++
++    debug = D.features(
++        instruments,
++        FIELDS,
++        start_time="2018-01-01",
++        end_time="2019-12-31",
++        freq="day",
++    ).swaplevel().sort_index()
++
++    top_instruments = debug.index.get_level_values("instrument").unique()[:100]
++    debug = debug.loc[(slice(None), top_instruments), :].sort_index()
++    debug.to_hdf("./daily_pv_debug.h5", key="data")
++
+ 
+-data.to_hdf("./daily_pv_debug.h5", key="data")
++if __name__ == "__main__":
++    main()
+diff --git a/rdagent/scenarios/qlib/experiment/factor_data_template/generate_us_template.py b/rdagent/scenarios/qlib/experiment/factor_data_template/generate_us_template.py
+new file mode 100644
+index 00000000..84df96c6
+--- /dev/null
++++ b/rdagent/scenarios/qlib/experiment/factor_data_template/generate_us_template.py
+@@ -0,0 +1,31 @@
++import qlib
++from qlib.data import D
++
++def main():
++    qlib.init(provider_uri="~/.qlib/qlib_data/us_data", region="us")
++
++    instruments = D.instruments("nasdaq100")
++    fields = ["$open", "$close", "$high", "$low", "$volume", "$factor"]
++
++    data = D.features(
++        instruments,
++        fields,
++        start_time="2009-01-01",
++        end_time="2020-11-06",
++        freq="day",
++    ).swaplevel().sort_index()
++
++    data.to_hdf("./daily_pv_all.h5", key="data")
++
++    debug = D.features(
++        instruments,
++        fields,
++        start_time="2018-01-01",
++        end_time="2019-12-31",
++        freq="day",
++    ).swaplevel().sort_index()
++
++    debug.to_hdf("./daily_pv_debug.h5", key="data")
++
++if __name__ == "__main__":
++    main()
+diff --git a/rdagent/scenarios/qlib/experiment/factor_template/conf_baseline.yaml b/rdagent/scenarios/qlib/experiment/factor_template/conf_baseline.yaml
+index 4583dc3e..6e0578a0 100644
+--- a/rdagent/scenarios/qlib/experiment/factor_template/conf_baseline.yaml
++++ b/rdagent/scenarios/qlib/experiment/factor_template/conf_baseline.yaml
+@@ -1,9 +1,9 @@
+ qlib_init:
+-    provider_uri: "~/.qlib/qlib_data/cn_data"
+-    region: cn
++    provider_uri: "${QLIB_DATA_DIR}"
++    region: us
+ 
+-market: &market csi300
+-benchmark: &benchmark SH000300
++market: &market {{ market | default("sp500", true) }}
++benchmark: &benchmark P84398
+ 
+ data_handler_config: &data_handler_config
+     start_time: {{ train_start | default("2008-01-01", true) }}
+@@ -45,19 +45,19 @@ port_analysis_config: &port_analysis_config
+         module_path: qlib.contrib.strategy
+         kwargs:
+             signal: <PRED>
+-            topk: 50
+-            n_drop: 5
++            topk: {{ topk | default("20", true) }}
++            n_drop: {{ n_drop | default("2", true) }}
+     backtest:
+         start_time: {{ test_start | default("2017-01-01", true) }}
+         end_time: {{ test_end | default("null", true) }}
+         account: 100000000
+         benchmark: *benchmark
+         exchange_kwargs:
+-            limit_threshold: 0.095
++            limit_threshold: null
+             deal_price: close
+-            open_cost: 0.0005
+-            close_cost: 0.0015
+-            min_cost: 5
++            open_cost: 0.0001
++            close_cost: 0.0001
++            min_cost: 0
+ 
+ task:
+     model:
+diff --git a/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors.yaml b/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors.yaml
+index df535694..ed7032d7 100644
+--- a/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors.yaml
++++ b/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors.yaml
+@@ -1,9 +1,9 @@
+ qlib_init:
+-    provider_uri: "~/.qlib/qlib_data/cn_data"
+-    region: cn
++    provider_uri: "${QLIB_DATA_DIR}"
++    region: us
+ 
+-market: &market csi300
+-benchmark: &benchmark SH000300
++market: &market {{ market | default("sp500", true) }}
++benchmark: &benchmark P84398
+ 
+ data_handler_config: &data_handler_config
+     start_time: {{ train_start | default("2008-01-01", true) }}
+@@ -38,19 +38,19 @@ port_analysis_config: &port_analysis_config
+         module_path: qlib.contrib.strategy
+         kwargs:
+             signal: <PRED>
+-            topk: 50
+-            n_drop: 5
++            topk: {{ topk | default("20", true) }}
++            n_drop: {{ n_drop | default("2", true) }}
+     backtest:
+         start_time: {{ test_start | default("2017-01-01", true) }}
+         end_time: {{ test_end | default("null", true) }}
+         account: 100000000
+         benchmark: *benchmark
+         exchange_kwargs:
+-            limit_threshold: 0.095
++            limit_threshold: null
+             deal_price: close
+-            open_cost: 0.0005
+-            close_cost: 0.0015
+-            min_cost: 5
++            open_cost: 0.0001
++            close_cost: 0.0001
++            min_cost: 0
+ 
+ task:
+     model:
+diff --git a/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors_sota_model.yaml b/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors_sota_model.yaml
+index f47941e0..94e02638 100644
+--- a/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors_sota_model.yaml
++++ b/rdagent/scenarios/qlib/experiment/factor_template/conf_combined_factors_sota_model.yaml
+@@ -1,9 +1,9 @@
+ qlib_init:
+-    provider_uri: "~/.qlib/qlib_data/cn_data"
+-    region: cn
++    provider_uri: "${QLIB_DATA_DIR}"
++    region: us
+ 
+-market: &market csi300
+-benchmark: &benchmark SH000300
++market: &market {{ market | default("sp500", true) }}
++benchmark: &benchmark P84398
+ 
+ data_handler_config: &data_handler_config
+     start_time: {{ train_start | default("2008-01-01", true) }}
+@@ -48,19 +48,19 @@ port_analysis_config: &port_analysis_config
+         module_path: qlib.contrib.strategy
+         kwargs:
+             signal: <PRED>
+-            topk: 50
+-            n_drop: 5
++            topk: {{ topk | default("20", true) }}
++            n_drop: {{ n_drop | default("2", true) }}
+     backtest:
+         start_time: {{ test_start | default("2017-01-01", true) }}
+         end_time: {{ test_end | default("null", true) }}
+         account: 100000000
+         benchmark: *benchmark
+         exchange_kwargs:
+-            limit_threshold: 0.095
++            limit_threshold: null
+             deal_price: close
+-            open_cost: 0.0005
+-            close_cost: 0.0015
+-            min_cost: 5
++            open_cost: 0.0001
++            close_cost: 0.0001
++            min_cost: 0
+ 
+ task:
+     model:
+diff --git a/rdagent/scenarios/qlib/experiment/model_template/conf_baseline_factors_model.yaml b/rdagent/scenarios/qlib/experiment/model_template/conf_baseline_factors_model.yaml
+index ef6cb0a9..c25a0746 100644
+--- a/rdagent/scenarios/qlib/experiment/model_template/conf_baseline_factors_model.yaml
++++ b/rdagent/scenarios/qlib/experiment/model_template/conf_baseline_factors_model.yaml
+@@ -1,12 +1,12 @@
+ qlib_init:
+-    provider_uri: "~/.qlib/qlib_data/cn_data"
+-    region: cn
+-market: &market csi300
+-benchmark: &benchmark SH000300
++    provider_uri: "${QLIB_DATA_DIR}"
++    region: us
++market: &market sp500
++benchmark: &benchmark P84398
+ 
+ data_handler_config: &data_handler_config
+     start_time: {{ train_start | default("2008-01-01", true) }}
+-    end_time: {{ test_end | default("null", true) }}
++    end_time: {{ test_end | default("2023-12-31", true) }}
+     instruments: *market
+     data_loader:
+         class: NestedDataLoader
+@@ -28,7 +28,7 @@ data_handler_config: &data_handler_config
+               fields_group: feature
+               clip_outlier: true
+               fit_start_time: {{ train_start | default("2008-01-01", true) }}
+-              fit_end_time: {{ train_end | default("2014-12-31", true) }}
++              fit_end_time: {{ train_end | default("2017-12-31", true) }}
+         - class: Fillna
+           kwargs:
+               fields_group: feature
+@@ -44,19 +44,19 @@ port_analysis_config: &port_analysis_config
+         module_path: qlib.contrib.strategy
+         kwargs:
+             signal: <PRED>
+-            topk: 50
+-            n_drop: 5
++            topk: 20
++            n_drop: 2
+     backtest:
+-        start_time: {{ test_start | default("2017-01-01", true) }}
+-        end_time: {{ test_end | default("null", true) }}
++        start_time: {{ test_start | default("2020-01-01", true) }}
++        end_time: {{ test_end | default("2023-12-31", true) }}
+         account: 100000000
+         benchmark: *benchmark
+         exchange_kwargs:
+-            limit_threshold: 0.095
++            limit_threshold: null
+             deal_price: close
+-            open_cost: 0.0005
+-            close_cost: 0.0015
+-            min_cost: 5
++            open_cost: 0.0001
++            close_cost: 0.0001
++            min_cost: 0
+ task:
+     model:
+         class: GeneralPTNN
+@@ -69,7 +69,7 @@ task:
+             weight_decay: {{ weight_decay }}
+             metric: loss
+             loss: mse
+-            n_jobs: 20
++            n_jobs: 0
+             GPU: 0
+             pt_model_uri: "model.model_cls"
+             pt_model_kwargs: {
+@@ -85,9 +85,9 @@ task:
+                 module_path: qlib.contrib.data.handler
+                 kwargs: *data_handler_config
+             segments:
+-                train: [{{ train_start | default("2008-01-01", true) }}, {{ train_end | default("2014-12-31", true) }}]
+-                valid: [{{ valid_start | default("2015-01-01", true) }}, {{ valid_end | default("2016-12-31", true) }}]
+-                test: [{{ test_start | default("2017-01-01", true) }}, {{ test_end | default("null", true) }}]
++                train: [{{ train_start | default("2008-01-01", true) }}, {{ train_end | default("2017-12-31", true) }}]
++                valid: [{{ valid_start | default("2018-01-01", true) }}, {{ valid_end | default("2019-12-31", true) }}]
++                test: [{{ test_start | default("2020-01-01", true) }}, {{ test_end | default("2023-12-31", true) }}]
+             {% if step_len %}step_len: {{ step_len }}{% endif %}
+     record: 
+         - class: SignalRecord
+diff --git a/rdagent/scenarios/qlib/experiment/model_template/conf_sota_factors_model.yaml b/rdagent/scenarios/qlib/experiment/model_template/conf_sota_factors_model.yaml
+index f47941e0..05816a40 100644
+--- a/rdagent/scenarios/qlib/experiment/model_template/conf_sota_factors_model.yaml
++++ b/rdagent/scenarios/qlib/experiment/model_template/conf_sota_factors_model.yaml
+@@ -1,13 +1,13 @@
+ qlib_init:
+-    provider_uri: "~/.qlib/qlib_data/cn_data"
+-    region: cn
++    provider_uri: "${QLIB_DATA_DIR}"
++    region: us
+ 
+-market: &market csi300
+-benchmark: &benchmark SH000300
++market: &market sp500
++benchmark: &benchmark P84398
+ 
+ data_handler_config: &data_handler_config
+     start_time: {{ train_start | default("2008-01-01", true) }}
+-    end_time: {{ test_end | default("null", true) }}
++    end_time: {{ test_end | default("2023-12-31", true) }}
+     instruments: *market
+     data_loader:
+         class: NestedDataLoader
+@@ -32,7 +32,7 @@ data_handler_config: &data_handler_config
+               fields_group: feature
+               clip_outlier: true
+               fit_start_time: {{ train_start | default("2008-01-01", true) }}
+-              fit_end_time: {{ train_end | default("2014-12-31", true) }}
++              fit_end_time: {{ train_end | default("2017-12-31", true) }}
+         - class: Fillna
+           kwargs:
+               fields_group: feature
+@@ -48,19 +48,19 @@ port_analysis_config: &port_analysis_config
+         module_path: qlib.contrib.strategy
+         kwargs:
+             signal: <PRED>
+-            topk: 50
+-            n_drop: 5
++            topk: 20
++            n_drop: 2
+     backtest:
+-        start_time: {{ test_start | default("2017-01-01", true) }}
+-        end_time: {{ test_end | default("null", true) }}
++        start_time: {{ test_start | default("2020-01-01", true) }}
++        end_time: {{ test_end | default("2023-12-31", true) }}
+         account: 100000000
+         benchmark: *benchmark
+         exchange_kwargs:
+-            limit_threshold: 0.095
++            limit_threshold: null
+             deal_price: close
+-            open_cost: 0.0005
+-            close_cost: 0.0015
+-            min_cost: 5
++            open_cost: 0.0001
++            close_cost: 0.0001
++            min_cost: 0
+ 
+ task:
+     model:
+@@ -74,7 +74,7 @@ task:
+             weight_decay: {{ weight_decay }}
+             metric: loss
+             loss: mse
+-            n_jobs: 20
++            n_jobs: 0
+             GPU: 0
+             pt_model_uri: "model.model_cls"
+             pt_model_kwargs: {
+@@ -89,9 +89,9 @@ task:
+                 module_path: qlib.contrib.data.handler
+                 kwargs: *data_handler_config
+             segments:
+-                train: [{{ train_start | default("2008-01-01", true) }}, {{ train_end | default("2014-12-31", true) }}]
+-                valid: [{{ valid_start | default("2015-01-01", true) }}, {{ valid_end | default("2016-12-31", true) }}]
+-                test: [{{ test_start | default("2017-01-01", true) }}, {{ test_end | default("null", true) }}]
++                train: [{{ train_start | default("2008-01-01", true) }}, {{ train_end | default("2017-12-31", true) }}]
++                valid: [{{ valid_start | default("2018-01-01", true) }}, {{ valid_end | default("2019-12-31", true) }}]
++                test: [{{ test_start | default("2020-01-01", true) }}, {{ test_end | default("2023-12-31", true) }}]
+             {% if step_len %}step_len: {{ step_len }}{% endif %}
+     record: 
+         - class: SignalRecord
+diff --git a/rdagent/scenarios/qlib/proposal/factor_proposal.py b/rdagent/scenarios/qlib/proposal/factor_proposal.py
+index 5ce9b70d..4ca8e161 100644
+--- a/rdagent/scenarios/qlib/proposal/factor_proposal.py
++++ b/rdagent/scenarios/qlib/proposal/factor_proposal.py
+@@ -1,6 +1,7 @@
+ import json
+ from typing import List, Tuple
+ 
++from rdagent.app.qlib_rd_loop.conf import FactorBasePropSetting
+ from rdagent.components.coder.factor_coder.factor import FactorExperiment, FactorTask
+ from rdagent.components.proposal import FactorHypothesis2Experiment, FactorHypothesisGen
+ from rdagent.core.proposal import Hypothesis, Scenario, Trace
+@@ -12,6 +13,15 @@ from rdagent.utils.agent.tpl import T
+ QlibFactorHypothesis = Hypothesis
+ 
+ 
++def _successful_factor_experiments(trace: Trace) -> List[FactorExperiment]:
++    """Prior loops that completed backtest (result present), regardless of SOTA decision."""
++    return [
++        t[0]
++        for t in trace.hist
++        if isinstance(t[0], FactorExperiment) and t[0].result is not None and len(t[0].sub_tasks) > 0
++    ]
++
++
+ class QlibFactorHypothesisGen(FactorHypothesisGen):
+     def __init__(self, scen: Scenario) -> Tuple[dict, bool]:
+         super().__init__(scen)
+@@ -109,14 +119,24 @@ class QlibFactorHypothesis2Experiment(FactorHypothesis2Experiment):
+             )
+ 
+         exp = QlibFactorExperiment(tasks, hypothesis=hypothesis)
+-        exp.based_experiments = [QlibFactorExperiment(sub_tasks=[])] + [
+-            t[0] for t in trace.hist if t[1] and isinstance(t[0], FactorExperiment)
+-        ]
++        empty_baseline = QlibFactorExperiment(sub_tasks=[])
++        accepted = [t[0] for t in trace.hist if t[1] and isinstance(t[0], FactorExperiment)]
++        exp.based_experiments = [empty_baseline] + accepted
++
++        fbps = FactorBasePropSetting()
++        if fbps.accumulate_all:
++            exp.factor_library_experiments = [empty_baseline] + _successful_factor_experiments(trace)
++        else:
++            exp.factor_library_experiments = None
++
++        dedupe_experiments = (
++            exp.factor_library_experiments if exp.factor_library_experiments is not None else exp.based_experiments
++        )
+ 
+         unique_tasks = []
+         for task in tasks:
+             duplicate = False
+-            for based_exp in exp.based_experiments:
++            for based_exp in dedupe_experiments:
+                 if isinstance(based_exp, QlibModelExperiment):
+                     continue
+                 for sub_task in based_exp.sub_tasks:
+diff --git a/rdagent/scenarios/shared/get_runtime_info.py b/rdagent/scenarios/shared/get_runtime_info.py
+index 9e66c7d3..ab6f785f 100644
+--- a/rdagent/scenarios/shared/get_runtime_info.py
++++ b/rdagent/scenarios/shared/get_runtime_info.py
+@@ -13,6 +13,8 @@ def get_runtime_environment_by_env(env: Env) -> str:
+     stdout = implementation.execute(env=env, entry=f"python {fname}")
+     # Extract JSON from stdout (skip CUDA/container warnings)
+     json_match = re.search(r"\{.*\}", stdout, re.DOTALL)
++    if json_match is None:
++        return stdout
+     return json.dumps(json.loads(json_match.group()), indent=2)
+ 
+ 
+diff --git a/rdagent/utils/env.py b/rdagent/utils/env.py
+index 47d5aea2..958eec22 100644
+--- a/rdagent/utils/env.py
++++ b/rdagent/utils/env.py
+@@ -855,6 +855,10 @@ class QlibCondaEnv(LocalEnv[QlibCondaConf]):
+                     f"conda run -n {self.conf.conda_env_name} pip install git+https://github.com/microsoft/qlib.git@2fb9380b342556ddb50a4b24e4fe8655d548b2b8",
+                     shell=True,
+                 )
++                subprocess.check_call(
++                    f"conda run -n {self.conf.conda_env_name} pip install 'mlflow==3.9.0'",
++                    shell=True,
++                )
+                 subprocess.check_call(
+                     f"conda run -n {self.conf.conda_env_name} pip install catboost xgboost tables torch",
+                     shell=True,

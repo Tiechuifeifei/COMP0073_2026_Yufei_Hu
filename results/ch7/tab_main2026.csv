@@ -1,0 +1,7 @@
+portfolio,cumulative_return,vs_spy_geom_pp,source
+RD13-Top5,0.4249079901471573,0.2750394797815692,filing_safe/regen
+RD13-Top20,0.3203504592270498,0.18147906693143767,filing_safe/regen
+PV-RD13 x Top5/drop1 (diagnostic),0.156171737290121,0.034568281352892694,173800 D2only
+FUND x Top5/drop1 (diagnostic),0.2500366091076258,0.11856066413095179,partB_fund_only
+FUND x Top20/drop2 (diagnostic),0.212198494277507,0.08470227426822996,partB_fund_only
+SPY,0.1175402901181243,0.0,filing_safe

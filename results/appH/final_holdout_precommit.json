@@ -1,0 +1,208 @@
+{
+  "created_at": "2026-08-04T11:07:54.652410+00:00",
+  "status": "FROZEN_PRECOMMIT",
+  "holdout_period": [
+    "2024-01-01",
+    "2025-12-31"
+  ],
+  "sample": "panel_intersect_D2_intersect_F1C",
+  "sample_paths": {
+    "panel": "${PROJECT_ROOT}/data/rd13_v2_downstream_replication/stage_1_delayed_panel/delayed_common_sample_rd13_v2.parquet",
+    "d2_pred": "${PROJECT_ROOT}/data/rd13_v2_downstream_replication/stage_2_delayed_models/pred_D2_ALPHA20_RD13_V2.parquet",
+    "f1c_pred": "${PROJECT_ROOT}/data/fundamental_experiments/F1_fundamental_lightgbm/main/F1C_no_operating_profitability_ensemble_pred.pkl"
+  },
+  "w_sentiment": 0,
+  "sentiment_excluded": true,
+  "no_post_run_tuning": true,
+  "no_new_candidates_after_precommit": true,
+  "portfolio_constants": {
+    "topk": 20,
+    "n_drop": 2,
+    "hold_thresh": 1,
+    "open_cost": 0.0001,
+    "close_cost": 0.0001,
+    "benchmark": "P84398",
+    "base_risk_degree": 0.95
+  },
+  "hmm_train_period": [
+    "2008-01-01",
+    "2017-12-31"
+  ],
+  "inference": {
+    "method": "strict_online_forward_filter",
+    "lag": 1,
+    "no_full_sample_smoothing": true,
+    "no_holdout_retraining": true,
+    "no_holdout_rescaling_of_train_stats": true,
+    "cross_section_preprocess": "daily_winsorize_zscore"
+  },
+  "candidates": {
+    "H0": {
+      "identity": "Original validation-selected primary specification",
+      "maps_to_main_experiment": "T0",
+      "hmm": {
+        "n_states": 2,
+        "seed": 42,
+        "features": [
+          "spy_ret",
+          "spy_vol20"
+        ]
+      },
+      "weights": {
+        "bull": {
+          "w_d2": 0.7,
+          "w_f1c": 0.3
+        },
+        "neutral": {
+          "w_d2": 0.7,
+          "w_f1c": 0.3
+        },
+        "bear": {
+          "w_d2": 0.7,
+          "w_f1c": 0.3
+        }
+      },
+      "exposure": 0.95
+    },
+    "H1": {
+      "identity": "Original regime-dependent factor-weighting hypothesis",
+      "maps_to_main_experiment": "T1",
+      "hmm": {
+        "n_states": 2,
+        "seed": 42,
+        "features": [
+          "spy_ret",
+          "spy_vol20"
+        ]
+      },
+      "weights": {
+        "bull": {
+          "w_d2": 0.8,
+          "w_f1c": 0.2
+        },
+        "neutral": {
+          "w_d2": 0.6,
+          "w_f1c": 0.4
+        },
+        "bear": {
+          "w_d2": 0.4,
+          "w_f1c": 0.6
+        }
+      },
+      "exposure": 0.95
+    },
+    "H2": {
+      "identity": "Fixed-weight control for revised three-state specification",
+      "hmm": {
+        "n_states": 3,
+        "seed": 42,
+        "spec_id": "R2",
+        "features": [
+          "spy_ret",
+          "spy_vol20",
+          "spy_vol_ratio_20_60"
+        ],
+        "label_map": {
+          "0": "neutral",
+          "1": "bear",
+          "2": "bull"
+        }
+      },
+      "weights": {
+        "bull": {
+          "w_d2": 0.7,
+          "w_f1c": 0.3
+        },
+        "neutral": {
+          "w_d2": 0.7,
+          "w_f1c": 0.3
+        },
+        "bear": {
+          "w_d2": 0.7,
+          "w_f1c": 0.3
+        }
+      },
+      "exposure": 0.95,
+      "parity_expectation": "Must match H0 portfolio scores (state-independent W1)"
+    },
+    "H3": {
+      "identity": "Post-hoc revised candidate requiring untouched holdout confirmation",
+      "hmm": {
+        "n_states": 3,
+        "seed": 42,
+        "spec_id": "R2",
+        "features": [
+          "spy_ret",
+          "spy_vol20",
+          "spy_vol_ratio_20_60"
+        ],
+        "label_map": {
+          "0": "neutral",
+          "1": "bear",
+          "2": "bull"
+        }
+      },
+      "weights": {
+        "bull": {
+          "w_d2": 0.8,
+          "w_f1c": 0.2
+        },
+        "neutral": {
+          "w_d2": 0.6,
+          "w_f1c": 0.4
+        },
+        "bear": {
+          "w_d2": 0.4,
+          "w_f1c": 0.6
+        }
+      },
+      "exposure": 0.95
+    }
+  },
+  "metrics": [
+    "arr",
+    "benchmark_arr",
+    "excess_arr_net",
+    "annual_volatility",
+    "sharpe",
+    "ir_net",
+    "mdd",
+    "calmar",
+    "turnover",
+    "transaction_cost_total",
+    "transaction_cost_daily_mean",
+    "average_holdings",
+    "average_exposure",
+    "topk_overlap",
+    "yearly_2024_2025",
+    "regime_breakdown",
+    "monthly_excess_return",
+    "best_worst_month"
+  ],
+  "pairwise_comparisons_required": [
+    "H1_vs_H0",
+    "H3_vs_H2",
+    "H3_vs_H0",
+    "2state_vs_3state_summary"
+  ],
+  "decision_rules_frozen": {
+    "revised_candidate_holdout_supported": [
+      "H3 excess ARR > H2",
+      "H3 Sharpe or IR > H2",
+      "improvement not from single month only",
+      "turnover/cost not abnormally higher",
+      "MDD not severely worse without compensating return",
+      "not entirely dependent on one holdout year"
+    ],
+    "mixed_evidence_template": "The revised candidate achieved higher holdout return, but the improvement was accompanied by weaker downside-risk performance and limited temporal stability.",
+    "not_replicated_template": "The validation and 2020\u20132023 test advantage of the revised three-state dynamic specification did not replicate in the untouched 2024\u20132025 holdout.",
+    "primary_status_preserved_if": "H0 risk-adjusted performance remains superior",
+    "no_winner_rewriting_history": true
+  },
+  "prerequisite_gate": {
+    "requires_frozen_d2_predictions_through_holdout_end": true,
+    "requires_frozen_f1c_predictions_through_holdout_end": true,
+    "requires_panel_holdout_rows": true,
+    "forbidden_if_missing": "retrain_on_holdout_or_impute_scores"
+  }
+}

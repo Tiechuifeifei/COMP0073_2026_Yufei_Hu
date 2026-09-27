@@ -1,0 +1,25 @@
+{
+  "selected_at": "2026-08-04T08:50:17.377929+00:00",
+  "n_states": 2,
+  "seed": 42,
+  "label_map": {
+    "1": "bear",
+    "0": "bull"
+  },
+  "selection_scores": {
+    "2-state": 7.0,
+    "3-state": 6.0
+  },
+  "selection_reasons": [
+    "SPY return ordering bull>bear",
+    "min state pct 28.43% >= 12%",
+    "mean duration 33.5d",
+    "low switches (14)",
+    "valid LL=-779.6"
+  ],
+  "validation_period": [
+    "2018-01-01",
+    "2019-12-31"
+  ],
+  "hard_cutoff": "2023-12-31"
+}

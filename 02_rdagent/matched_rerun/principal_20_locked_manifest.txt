@@ -1,0 +1,40 @@
+# PRINCIPAL 20-LOOP LOCKED MANIFEST
+# Role: paper principal clean/matched rerun — DO NOT MUTATE
+# Locked_at: 2026-09-17T01:11:35+01:00
+# Status: Loops 0-19 complete + forensic_audit_loops0_19 PASS
+
+PRINCIPAL_ROOT=${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916
+PRINCIPAL_SESSION=${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/sessions/matched_20loop_20260916_090024
+LOOP19_4_RECORD=${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/sessions/matched_20loop_20260916_090024/__session__/19/4_record
+TRACE_HIST_LENGTH=20
+LOOP_20_EXISTS=false
+
+FINAL_SOTA_LOOP=2
+FINAL_SOTA_WORKSPACE=61a0e3a7267949579b32513f34c3c930
+FINAL_SOTA_IC=0.0045035290804027
+FINAL_SOTA_ARR=0.1663016969585134
+FINAL_SOTA_MDD=-0.374012941664434
+
+POLICY:
+- Do not modify/delete/overwrite __session__/0..19
+- Do not modify principal audit files or tee logs
+- Do not re-run Loops 0-19
+- Do not write extension cache/session/logs into this ROOT
+- Post-hoc Loops 20-29 must live under a separate extension ROOT
+
+KEY_HASHES:
+SHA256  81b263ce3933c8f8a4226194a06e6141b88104605c81019779cef0b700124cfb  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/sessions/matched_20loop_20260916_090024/__session__/19/4_record
+SHA256  811666d3f9e0e4c8cfb7e3d3afe3e0a7eb7cb6cb8396e5e1ff17ae1b86340a46  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/source_data_clean/daily_pv.h5
+SHA256  f8a213cb35c6677a9a4a38ccbdfb4b05fe4798090da83764b8fafe0f1dc98a1c  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/golden_prompts/scenarios_qlib_prompts.yaml
+SHA256  15e0e79ef9f1c95640b87f7816c1b8f598e9363655347a23e8e73b665f563aee  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/forensic_audit_loops0_19.md
+SHA256  ba0d1d59548c7f1728f3f264a1aeabe6dc5c18c3aa467dadda190c609da0e2b1  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/final_sota_summary.md
+SHA256  5c017789747e493517e715a832756d394bb07a09cdc0169425f83d8d327a145d  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/loop_summary_0_19.csv
+SHA256  9b1cfb7ba1a79c0e4a98e03819dbc88c2085ad3adb235f1fdc2b52ce817babbc  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/accepted_factor_provenance_0_19.csv
+SHA256  1b87a9624e5f5daa215c66de405ae0c011847e614f59c664f4fae2027851ebea  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/replication_20loop/tee_matched_first10_20260916_090024.log
+SHA256  e09ee568a628a856233e49ab349d3a68a7f4a88116872d4ccfb43f8cfd3073b4  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/replication_20loop/tee_matched_resume10_20260916_100221.log
+SHA256  3887fed121982923c1229540a51a77b4f1e59c9832f170f4922a7301352676f8  ${PROJECT_ROOT}/reports/rdagent_matched_reference_rerun_20260916/pickle_cache/rdagent.scenarios.qlib.developer.factor_runner.develop/d41d8cd98f00b204e9800998ecf8427e.pkl
+
+NOTES:
+- Prior phase_status=complete_20 false-positive after no-op resume is superseded by real Loop_19 completion.
+- Loop19 skipped running (missing torch) — known WARNING; do not install torch for continuity.
+- Runtime prompt overlay SHA during principal run: f8a213cb35c6677a9a4a38ccbdfb4b05fe4798090da83764b8fafe0f1dc98a1c

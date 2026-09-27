@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-09-14T10:11:45+00:00",
+  "audit_only": true,
+  "evaluation_window": {
+    "first_compliant_MOC_date": "2026-08-31",
+    "final_reconciled_date": "2026-09-10",
+    "n_trading_days": 8,
+    "sessions": [
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10"
+    ]
+  },
+  "performance": {
+    "starting_NAV_GBP": 993256.26,
+    "ending_NAV_GBP": 929016.25,
+    "cumulative_paper_return": -0.06467616926975117,
+    "spy_usd_return": -0.012020076918062617,
+    "spy_gbp_return": -0.009134627008662632,
+    "cumulative_excess_vs_spy_gbp": -0.05554154226108854,
+    "annualised": false,
+    "spy_start_close": 767.05,
+    "spy_end_close": 757.83,
+    "fx_start": 0.7380446,
+    "fx_end": 0.7402001
+  },
+  "authoritative_sources": [
+    "ibkr/audit_ibkr_live_pull_20260910.json (TWS reqExecutions + positions; reconcile PASS)",
+    "ibkr/audit_actual_fills_20260831_20260910.csv",
+    "ibkr/audit_actual_positions_20260831_20260910.csv",
+    "ibkr/audit_actual_paper_pnl_20260831_20260910.csv / _summary.json",
+    "reports/ibkr/p5_paper_20260831_status.json / p5_paper_moc_fills.json",
+    "reports/ibkr/p5_paper_20260901_status.json",
+    "reports/ibkr/p5_moc_staged_20260908.json",
+    "reports/ibkr/p5_paper_first_orders.json (smoke-test only)",
+    "data/.../weights_full.csv (intended P5 names only)"
+  ],
+  "broker_fill_vs_massive_median_bps": -5.151294412575336,
+  "broker_fill_vs_massive_mean_bps": -4.293381501279316
+}

@@ -1,0 +1,24 @@
+section,metric,value,source
+window,first_day,2026-08-31,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/A_B_window_and_performance.json
+window,last_day,2026-09-10,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/A_B_window_and_performance.json
+window,n_trading_days,8,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/A_B_window_and_performance.json
+window,account,${EXPECTED_ACCOUNT} PAPER GBP,${PROJECT_ROOT}/reports/ibkr/p5_paper_20260831_status.json
+orders,n_order_rows,18,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/D_rebalance_reconciliation.csv
+orders,n_full_fills,15,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/D_rebalance_reconciliation.csv
+orders,n_partial_fills,3,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/D_rebalance_reconciliation.csv
+orders,fill_rate_full_over_rows,0.8333333333333334,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/D_rebalance_reconciliation.csv
+slippage,broker_fill_vs_massive_mean_bps,-4.293381501279316,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
+slippage,broker_fill_vs_massive_median_bps,-5.151294412575336,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
+slippage,BUY_mean_bps,-5.348910042075827,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
+slippage,SELL_mean_bps,-3.4137743839488905,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/G_fill_vs_massive.csv
+cost,commission_USD,52.244378,${PROJECT_ROOT}/ibkr/audit_actual_paper_pnl_20260831_20260910_summary.json
+cost,commission_GBP_approx,38.5586810632588,${PROJECT_ROOT}/ibkr/audit_actual_paper_pnl_20260831_20260910_summary.json
+cost,approx_daily_commission_bp_of_start_NAV,0.04852559532730607,${PROJECT_ROOT}/ibkr/audit_actual_paper_pnl_20260831_20260910_summary.json; vs backtest one-way 1bp on traded notional (not identical basis)
+fidelity,mean_name_jaccard_intended_vs_actual,0.9583333333333334,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/D_rebalance_reconciliation.csv+${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/C_daily_account_path.csv
+fidelity,mean_rough_weight_MAE,0.0095,membership diff ×0.19 / 5 (proxy; not mark-to-market weights)
+returns,actual_cum_return,-0.06467616926975117,${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/A_B_window_and_performance.json
+returns,spy_usd_return,-0.012020076918062617,${PROJECT_ROOT}/data/massive_2026/raw/SPY_daily.parquet
+returns,spy_gbp_return,-0.009134627008662632,${PROJECT_ROOT}/data/massive_2026/raw/SPY_daily.parquet+${PROJECT_ROOT}/reports/ibkr/dissertation_final_paper_audit_20260831_20260910/C_daily_account_path.csv
+returns,fx_contribution_spy_gbp_minus_usd,0.002885449909399984,C_daily_account_path.csv
+returns,theory_cum_r_net_0901_0910,-0.07636902409173962,${PROJECT_ROOT}/data/portfolio_experiments/market_risk/live_target/daily_full.csv
+returns,actual_minus_theory,0.011692854821988452,account NAV path − live_target r_net compound

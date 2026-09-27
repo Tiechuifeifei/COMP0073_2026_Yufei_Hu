@@ -1,0 +1,142 @@
+# Step 2 transfer experiment config (PREPARED ONLY — do not run until reviewed).
+#
+# Uses RD-Agent's Alpha20 seed factor library on the same SP500 universe and
+# staging/qlib_data provider. Mirrors factor_template/conf_baseline.yaml but
+# targets our WRDS SP500 dump instead of nasdaq100/us_data.
+#
+# US experiment windows (NOT Step 1 smoke-test dates):
+#   train 2008-01-01 .. 2017-12-31
+#   valid 2018-01-01 .. 2019-12-31
+#   test  2020-01-01 .. 2023-12-31
+#
+# Benchmark: P84398 = SPY ETF (PERMNO 84398) via WRDS CRSP ingest (2026-07-13).
+# Excess ARR/IR/Sharpe vs P84398 are interpretable as S&P 500 proxy alpha.
+# See docs/decisions.md § SPY benchmark ingest via WRDS CRSP.
+
+qlib_init:
+    provider_uri: "${QLIB_DATA_DIR}"
+    region: us
+    kernels: 1
+
+market: &market sp500
+benchmark: &benchmark P84398
+
+data_handler_config: &data_handler_config
+    start_time: 2008-01-01
+    end_time: 2023-12-31
+    instruments: *market
+    data_loader:
+        class: NestedDataLoader
+        kwargs:
+            dataloader_l:
+                - class: qlib.contrib.data.loader.Alpha158DL
+                  kwargs:
+                    config:
+                        label:
+                            - ["Ref($close, -2)/Ref($close, -1) - 1"]
+                            - ["LABEL0"]
+                        feature:
+                            - [
+                                "Resi($close, 5)/$close",
+                                "Std(Abs($close/Ref($close, 1)-1)*$volume, 5)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 5)+1e-12)",
+                                "Rsquare($close, 5)",
+                                "($high-$low)/$open",
+                                "Rsquare($close, 10)",
+                                "Corr($close, Log($volume+1), 5)",
+                                "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 5)",
+                                "Corr($close, Log($volume+1), 10)",
+                                "Ref($close, 60)/$close",
+                                "Resi($close, 10)/$close",
+                                "Std($volume, 5)/($volume+1e-12)",
+                                "Rsquare($close, 60)",
+                                "Corr($close, Log($volume+1), 60)",
+                                "Std(Abs($close/Ref($close, 1)-1)*$volume, 60)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 60)+1e-12)",
+                                "Std($close, 5)/$close",
+                                "Rsquare($close, 20)",
+                                "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 60)",
+                                "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 10)",
+                                "Corr($close, Log($volume+1), 20)",
+                                "(Less($open, $close)-$low)/$open",
+                              ]
+                            - [
+                                "RESI5", "WVMA5", "RSQR5", "KLEN", "RSQR10", "CORR5", "CORD5", "CORR10",
+                                "ROC60", "RESI10", "VSTD5", "RSQR60", "CORR60", "WVMA60", "STD5", "RSQR20",
+                                "CORD60", "CORD10", "CORR20", "KLOW",
+                              ]
+    infer_processors:
+        - class: RobustZScoreNorm
+          kwargs:
+              fields_group: feature
+              clip_outlier: true
+              fit_start_time: 2008-01-01
+              fit_end_time: 2017-12-31
+        - class: Fillna
+          kwargs:
+              fields_group: feature
+    learn_processors:
+        - class: DropnaLabel
+        - class: CSZScoreNorm
+          kwargs:
+              fields_group: label
+
+port_analysis_config: &port_analysis_config
+    strategy:
+        class: TopkDropoutStrategy
+        module_path: qlib.contrib.strategy
+        kwargs:
+            signal: <PRED>
+            topk: 20
+            n_drop: 2
+    backtest:
+        start_time: 2020-01-01
+        end_time: 2023-12-31
+        account: 100000000
+        benchmark: *benchmark
+        exchange_kwargs:
+            limit_threshold: null
+            deal_price: close
+            open_cost: 0.0001
+            close_cost: 0.0001
+            min_cost: 0
+
+task:
+    model:
+        class: LGBModel
+        module_path: qlib.contrib.model.gbdt
+        kwargs:
+            loss: mse
+            colsample_bytree: 0.8879
+            learning_rate: 0.2
+            subsample: 0.8789
+            lambda_l1: 205.6999
+            lambda_l2: 580.9768
+            max_depth: 8
+            num_leaves: 210
+            num_threads: 20
+    dataset:
+        class: DatasetH
+        module_path: qlib.data.dataset
+        kwargs:
+            handler:
+                class: DataHandlerLP
+                module_path: qlib.contrib.data.handler
+                kwargs: *data_handler_config
+            segments:
+                train: [2008-01-01, 2017-12-31]
+                valid: [2018-01-01, 2019-12-31]
+                test: [2020-01-01, 2023-12-31]
+    record:
+        - class: SignalRecord
+          module_path: qlib.workflow.record_temp
+          kwargs:
+            model: <MODEL>
+            dataset: <DATASET>
+        - class: SigAnaRecord
+          module_path: qlib.workflow.record_temp
+          kwargs:
+            ana_long_short: False
+            ann_scaler: 252
+        - class: PortAnaRecord
+          module_path: qlib.workflow.record_temp
+          kwargs:
+            config: *port_analysis_config

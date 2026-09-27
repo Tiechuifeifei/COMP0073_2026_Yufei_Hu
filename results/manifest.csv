@@ -1,0 +1,27 @@
+dissertation_label,dest_path,source_artifact,generating_script,canonical_experiment_identity,evidence_status,notes
+fig:traj,results/ch3/fig_traj.pdf,ucl_project_report_en/_zip_update/fig3_1_pipeline.pdf,UNKNOWN (hand-authored figure asset),PIPELINE-OVERVIEW,CANONICAL,Not regenerated from code; shipped as dissertation figure file.
+tab:periods,,,N/A (static),PERIOD-SPLITS,STATIC_IN_REPORT,static table in report
+tab:rd8states,results/ch4/tab_rd8states.csv,reports/rdagent_matched_reference_rerun_20260916/loop_summary_0_19.csv,reports/rdagent_matched_reference_rerun_20260916/ (matched rerun orchestration),RD8-MATCHED-RERUN-20260916,CANONICAL,
+tab:rd13path,,reports/legacy_sp500_40loop_mechanism_audit_20260916/ic_surpass_chain.csv,UNKNOWN (table extraction from 40-loop audit),RD13-IC-SURPASS-CHAIN,STATIC_IN_REPORT,static table in report; source output not bundled
+tab:infosets,results/ch4/tab_infosets.csv,reports/rd13_l20_unified_ABCD_20260923_193417/A_period_metrics_seed_mean_std.csv,fundamental_experiments/rd13_l20_unified_tables_ABCD.py (or sibling),RD13-L20-UNIFIED-ABCD,CANONICAL,
+tab:twobytwo,results/ch4/tab_twobytwo.csv,reports/rd13_l20_supplement_20260923_191327/portfolio_2x2_summary.csv,fundamental_experiments/rd13_l20_supplement_2x2.py (or sibling),RD13-L20-SUPPLEMENT-2X2,CANONICAL,
+tab:config-issues,,,N/A (static),RD13-CONFIG-AUDIT,STATIC_IN_REPORT,static table in report
+tab:dseries,results/ch5/tab_dseries.csv,data/rd13_v2_downstream_replication/stage_2_delayed_models/delayed_metrics_by_spec.csv,fundamental_experiments/RD13_v2_downstream_replication_pipeline.py,SIGNAL-D1/D2/… (RD13_v2 delayed),CANONICAL,
+tab:dpaired,results/ch5/tab_dpaired.csv,reports/rd13_l20_downstream_cmp_20260923_190325/paired_delta_rankic_bootstrap.csv,fundamental_experiments/ch5_d_series_identity_and_paired_audit.py,D-SERIES-PAIRED,CANONICAL,
+tab:r50signals,results/ch5/tab_r50signals.csv,reports/pv_fund_blend_r50_20260919_003636/blend_grid_metrics.csv,fundamental_experiments/pv_fund_blend_r50.py,FUSED-RD8 / FUND-R50,CANONICAL,
+tab:rd8paired,results/ch5/tab_rd8paired.csv,reports/pv_fund_blend_r50_20260919_003636/blend_paired_metrics.csv,fundamental_experiments/pv_fund_blend_r50.py,FUSED-RD8-PAIRED,CANONICAL,
+fig:wgrid,results/appF/fig_wgrid.png,ucl_project_report_en/_zip_update/figF_1.png,fundamental_experiments/pv_fund_blend_r50.py,FUSED-RD8-WGRID,CANONICAL,Exact \includegraphics asset for Figure F.1
+tab:iseries,results/ch5/tab_iseries.csv,data/rd13_v2_downstream_replication/stage_4_immediate_models/immediate_metrics_by_spec.csv,fundamental_experiments/RD13_v2_downstream_replication_pipeline.py,I-SERIES,CANONICAL,H_INTRADAY_T_v2 seed rows matching Table 5.5 after rounding
+tab:sentfuse,,reports/sentiment_corrected_20260919/sentiment_paired_delta.csv,sentiment_experiments/S5R_*,SENT-FUSE,STATIC_IN_REPORT,static table in report; source output not bundled (paired ΔRank IC ≠ Table 5.6 cells)
+tab:w1speed,results/ch6/tab_w1speed.csv,reports/portfolio_engine_pair/p20d2_vs_p20d4_main_experiments/02_w1_p20d2_p20d4_development.csv,portfolio_experiments/p20d2_vs_p20d4_pair/,W1-P20D2-vs-P20D4,CANONICAL,
+tab:w1breadth,results/ch6/tab_w1breadth.csv,data/portfolio_experiments/topk_breadth/period_summary.csv,portfolio_experiments/topk_breadth/run_experiment.py,ENGINE-P5 / TopK-breadth,CANONICAL,
+tab:fbaseconc,results/ch6/tab_fbaseconc.csv,reports/w1_vs_fbase_16config_20260923_230218/matched_16_comparison.csv,portfolio_experiments/w1_vs_fbase_16config_grid.py (or sibling),W1-vs-F_BASE-16,CANONICAL,
+tab:replace,results/ch6/tab_replace.csv,"reports/w1_vs_fbase_16config_20260923_230218/{w1,fbase}_16_wide.csv",portfolio_experiments/w1_vs_fbase_16config_grid.py,W1-REPLACE,CANONICAL,Table 6.4 deltas; percent-then-subtract rounding matches PDF
+fig:rankstab,results/ch6/fig_rankstab.pdf,reports/rd13_followup_figures_20260926/fig_rank_stability_decay.pdf,fundamental_experiments/ch5_signal_persistence_decay.py,RANK-STABILITY,CANONICAL,
+tab:regime,results/ch6/tab_regime.csv,data/portfolio_experiments/hmm_regime/portfolio_test_summary.csv,portfolio_experiments/hmm_regime/run_portfolio_test.py,T0–T3 / HMM-regime,CANONICAL,
+tab:status,,,N/A,EVAL-STATUS,STATIC_IN_REPORT,static table in report
+tab:ic2425,results/ch7/tab_ic2425.csv,reports/matched_2x2_2024_2025_20260923_105208/ic_summary.csv,portfolio_experiments/matched_2x2_2024_2025.py (or sibling),MATCHED-2X2-2024-2025,CANONICAL,
+tab:pre2425,results/ch7/tab_pre2425.csv,reports/matched_2x2_2024_2025_20260923_105208/matched_2x2_results.csv,portfolio_experiments/matched_2x2_2024_2025.py (or sibling),MATCHED-2X2-2024-2025,CANONICAL,
+tab:main2026,results/ch7/tab_main2026.csv,reports/matched_2x2_2026_f1c_filing_sens_20260923_181453/main_window_filing_safe_results.csv + partB_fund_only + 173800 D2only,portfolio_experiments/matched_2x2_2026/run_approximate_b_only.py + run_f1c_filing_sensitivity.py,MATCHED-2X2-2026-FILING-SAFE,CANONICAL,Table 7.4 digits match after %-rounding; archived 46.08% NOT used
+fig:wealth2026,results/ch7/fig_wealth2026.pdf,reports/rd13_followup_figures_20260926/fig_2026_wealth_curves.pdf,portfolio_experiments/matched_2x2_2026/run_approximate_b_only.py (figure export sibling),MATCHED-2X2-2026,CANONICAL,
+tab:ibkr,results/ch7/tab_ibkr.csv,reports/ibkr/ch7_paper_summary.csv,fundamental_experiments/ch7_paper_execution_readonly_summary.py,PAPER-P5-IBKR,CANONICAL,Sanitized copy strips account ids and absolute local paths.

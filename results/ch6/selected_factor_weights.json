@@ -1,0 +1,58 @@
+{
+  "design_note": "W1 is fixed-factor baseline; W2 is dynamic-factor candidate for P1/P3.",
+  "fixed_factor_baseline": "W1",
+  "dynamic_factor_candidate": "W2",
+  "eliminated_schemes": [
+    "W3"
+  ],
+  "W1": {
+    "role": "P0/P2 fixed factor weights",
+    "type": "fixed_all_states",
+    "weights_by_state": {
+      "bull": {
+        "w_quant": 0.7,
+        "w_fundamental": 0.3,
+        "w_sentiment": 0.0
+      },
+      "neutral": {
+        "w_quant": 0.7,
+        "w_fundamental": 0.3,
+        "w_sentiment": 0.0
+      },
+      "bear": {
+        "w_quant": 0.7,
+        "w_fundamental": 0.3,
+        "w_sentiment": 0.0
+      }
+    }
+  },
+  "W2": {
+    "role": "P1/P3 dynamic factor weights",
+    "type": "regime_conditional",
+    "weights_by_state": {
+      "bull": {
+        "w_quant": 0.8,
+        "w_fundamental": 0.2,
+        "w_sentiment": 0.0
+      },
+      "neutral": {
+        "w_quant": 0.6,
+        "w_fundamental": 0.4,
+        "w_sentiment": 0.0
+      },
+      "bear": {
+        "w_quant": 0.4,
+        "w_fundamental": 0.6,
+        "w_sentiment": 0.0
+      }
+    }
+  },
+  "test_2x2_mapping": {
+    "P0": "W1 + fixed exposure 0.95",
+    "P1": "W2 + fixed exposure 0.95",
+    "P2": "W1 + selected dynamic exposure",
+    "P3": "W2 + selected dynamic exposure"
+  },
+  "frozen_on": "validation_2018_2019",
+  "selection_note": "W1 best validation ARR among W0-W3 but W2 retained to test HMM dynamic weights."
+}
